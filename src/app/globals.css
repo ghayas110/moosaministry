@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --mm-black: #0a0a0a;
+  --mm-ink: #14110f;
+  --mm-maroon: #5c1a2e;
+  --mm-maroon-deep: #3d0e1d;
+  --mm-cream: #f5f0dc;
+  --mm-tan: #d4a07a;
+  --mm-tan-deep: #b07a52;
+  --mm-neon: #ff2d55;
+  --mm-gold: #ffd700;
+  --mm-steam: rgba(255, 255, 255, 0.04);
+  --mm-line: rgba(245, 240, 220, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--mm-black);
+  --color-ink: var(--mm-ink);
+  --color-maroon: var(--mm-maroon);
+  --color-maroon-deep: var(--mm-maroon-deep);
+  --color-cream: var(--mm-cream);
+  --color-tan: var(--mm-tan);
+  --color-tan-deep: var(--mm-tan-deep);
+  --color-neon: var(--mm-neon);
+  --color-gold: var(--mm-gold);
+  --color-steam: var(--mm-steam);
+  --color-line: var(--mm-line);
+  --font-display: var(--font-noto-serif-kr), "Gowun Batang", serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--mm-line);
+}
+
+html,
+body {
+  background: var(--mm-black);
+  color: var(--mm-cream);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(92, 26, 46, 0.35), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(212, 160, 122, 0.08), transparent 60%),
+    var(--mm-black);
+}
+
+::selection {
+  background: var(--mm-maroon);
+  color: var(--mm-cream);
+}
+
+.font-display {
+  font-family: var(--font-noto-serif-kr), "Gowun Batang", serif;
+  letter-spacing: -0.01em;
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(245, 240, 220, 0.04), rgba(245, 240, 220, 0.015));
+  border: 1px solid var(--mm-line);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.neon-text {
+  color: var(--mm-neon);
+  text-shadow: 0 0 12px rgba(255, 45, 85, 0.6), 0 0 32px rgba(255, 45, 85, 0.3);
+}
+
+.gold-text {
+  color: var(--mm-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(120deg, var(--mm-cream) 0%, var(--mm-tan) 50%, var(--mm-cream) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.maroon-glow {
+  box-shadow: 0 0 0 1px rgba(92, 26, 46, 0.6), 0 12px 60px -12px rgba(92, 26, 46, 0.55);
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--mm-maroon); border-radius: 3px; }
+
+@keyframes mm-steam-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  20% { opacity: 0.6; }
+  100% { transform: translateY(-160px) scale(1.6); opacity: 0; }
+}
+
+@keyframes mm-pulse-neon {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.6); }
+  50% { box-shadow: 0 0 0 14px rgba(255, 45, 85, 0); }
+}
+.pulse-neon { animation: mm-pulse-neon 2s ease-out infinite; }
+
+@keyframes mm-flicker {
+  0%, 100% { opacity: 1; }
+  43% { opacity: 0.85; }
+  47% { opacity: 1; }
+}
+.flicker { animation: mm-flicker 4s infinite; }
+
+@media print {
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
 }
