@@ -43,24 +43,28 @@ export async function POST(req: Request) {
     const parsed = orderSchema.parse(body);
 
     const orderNumber = generateOrderNumber();
-    const now = new Date().toISOString();
 
-    const doc = {
+    // Build the document — Sanity manages _createdAt / _updatedAt / _rev / _id itself,
+    // so we MUST NOT set them. Optional fields are only included when they have a value
+    // because the Sanity client does not strip `undefined` from object literals.
+    const doc: { _type: string; [k: string]: unknown } = {
       _type: "order",
       orderNumber,
       type: parsed.type,
       items: parsed.items.map((it) => ({
         _type: "orderItem",
-        _key: `${it.menuItemId}-${Math.random().toString(36).slice(2, 8)}`,
+        _key: `${it.menuItemId.slice(0, 8)}-${Math.random().toString(36).slice(2, 8)}`,
         menuItem: { _type: "reference", _ref: it.menuItemId },
         name: it.name,
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         variants: (it.variants ?? []).map((v, i) => ({
           _key: `v${i}-${Math.random().toString(36).slice(2, 6)}`,
-          ...v,
+          group: v.group,
+          label: v.label,
+          priceModifier: v.priceModifier ?? 0,
         })),
-        notes: it.notes,
+        ...(it.notes ? { notes: it.notes } : {}),
         preparedItems: 0,
       })),
       subtotal: parsed.subtotal,
@@ -68,17 +72,22 @@ export async function POST(req: Request) {
       discount: parsed.discount,
       total: parsed.total,
       paymentMethod: parsed.paymentMethod,
-      paymentStatus: parsed.paymentStatus ?? (parsed.paymentMethod === "cash" || parsed.paymentMethod === "card" ? "paid" : "pending"),
-      orderStatus: "received" as const,
-      kdsStatus: "pending" as const,
-      customerName: parsed.customerName,
-      customerPhone: parsed.customerPhone,
-      deliveryAddress: parsed.deliveryAddress,
-      tableNumber: parsed.tableNumber,
-      notes: parsed.notes,
-      staff: parsed.staffId ? { _type: "reference", _ref: parsed.staffId } : undefined,
-      _createdAt: now,
+      paymentStatus:
+        parsed.paymentStatus ??
+        (parsed.paymentMethod === "cash" || parsed.paymentMethod === "card"
+          ? "paid"
+          : "pending"),
+      orderStatus: "received",
+      kdsStatus: "pending",
     };
+
+    if (parsed.customerName?.trim()) doc.customerName = parsed.customerName.trim();
+    if (parsed.customerPhone?.trim()) doc.customerPhone = parsed.customerPhone.trim();
+    if (parsed.deliveryAddress?.trim()) doc.deliveryAddress = parsed.deliveryAddress.trim();
+    if (parsed.tableNumber?.trim()) doc.tableNumber = parsed.tableNumber.trim();
+    if (parsed.notes?.trim()) doc.notes = parsed.notes.trim();
+    if (parsed.staffId)
+      doc.staff = { _type: "reference", _ref: parsed.staffId };
 
     const created = await sanityWriteClient.create(doc);
 
@@ -110,6 +119,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid input", issues: err.issues }, { status: 400 });
     }
     console.error("create order failed", err);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    const message =
+      err instanceof Error ? err.message : "Failed to create order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
