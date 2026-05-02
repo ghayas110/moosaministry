@@ -1,32 +1,18 @@
 import { Hero3D } from "@/components/storefront/Hero3D";
 import { ZoomGallery } from "@/components/storefront/ZoomGallery";
+import { FeatureCard, type FeaturedItem } from "@/components/storefront/FeatureCard";
 import { sanityClient } from "@/sanity/client";
 import { featuredItemsQuery } from "@/sanity/queries";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatPKR } from "@/lib/utils";
-import { urlFor } from "@/sanity/client";
-import Image from "next/image";
 import { Flame, Clock, MapPin, Sparkles } from "lucide-react";
 
 export const revalidate = 60;
 
-type Featured = {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  price: number;
-  spiceLevel?: number;
-  images?: { asset: { _ref: string } }[];
-  category?: { name: string; slug: string };
-};
-
 export default async function HomePage() {
-  let featured: Featured[] = [];
+  let featured: FeaturedItem[] = [];
   try {
-    featured = await sanityClient.fetch<Featured[]>(featuredItemsQuery);
+    featured = await sanityClient.fetch<FeaturedItem[]>(featuredItemsQuery);
   } catch {
     featured = [];
   }
@@ -142,56 +128,6 @@ export default async function HomePage() {
         </div>
       </section>
     </>
-  );
-}
-
-function FeatureCard({ item }: { item: Featured }) {
-  const img = item.images?.[0]
-    ? urlFor(item.images[0]).width(720).height(540).url()
-    : null;
-  return (
-    <Link
-      href="/menu"
-      className="group glass rounded-3xl overflow-hidden hover:maroon-glow transition-all duration-500 hover:-translate-y-1"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--mm-ink)]">
-        {img ? (
-          <Image
-            src={img}
-            alt={item.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-6xl">🍜</div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-        {item.spiceLevel ? (
-          <div className="absolute top-3 right-3">
-            <Badge tone="neon">
-              {"🌶".repeat(Math.max(1, item.spiceLevel))}
-            </Badge>
-          </div>
-        ) : null}
-        {item.category?.name && (
-          <div className="absolute top-3 left-3">
-            <Badge tone="cream">{item.category.name}</Badge>
-          </div>
-        )}
-      </div>
-      <div className="p-5">
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="font-display text-xl truncate">{item.name}</h3>
-          <span className="gold-text font-semibold">{formatPKR(item.price)}</span>
-        </div>
-        {item.description && (
-          <p className="mt-2 text-sm text-[var(--mm-cream)]/55 line-clamp-2">
-            {item.description}
-          </p>
-        )}
-      </div>
-    </Link>
   );
 }
 

@@ -18,6 +18,8 @@ export const menuItemsQuery = groq`
 export const featuredItemsQuery = groq`
   *[_type == "menuItem" && isAvailable == true && isFeatured == true] | order(_createdAt desc)[0...6] {
     _id, name, "slug": slug.current, description, price, spiceLevel, images,
+    tags, allergens,
+    variants[]{ name, options[]{ label, priceModifier } },
     "category": category->{name, "slug": slug.current}
   }
 `;
